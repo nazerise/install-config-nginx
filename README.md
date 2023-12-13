@@ -5,3 +5,5 @@ Edit these files and install nginx with simple configuration for prod and test e
 1- inventory/hosts-nginx
 
 2- roles/nginx/vars/*
+
+This ansible also install Node_exporter to monitor Nginx in grafana
