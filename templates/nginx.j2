@@ -1,0 +1,14 @@
+/var/log/nginx/*.log {
+    monthly
+    rotate 13
+    create 0664 nginx root
+    missingok
+    notifempty
+    compress
+    olddir /var/log/nginx/archived-logs/
+    sharedscripts
+    postrotate
+        /bin/kill -USR1 `cat /run/nginx.pid 2>/dev/null` 2>/dev/null || true
+    endscript
+}
+

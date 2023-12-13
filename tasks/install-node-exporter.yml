@@ -1,0 +1,29 @@
+---
+- name: Create node_exporter directory
+  file:
+    path: "/etc/node_exporter"
+    state: directory
+
+- name: Add user node_exporter
+  user:
+    name: node_exporter
+    groups: node_exporter
+    shell: /bin/false
+    create_home: no
+    comment: "node_exporter user"
+
+- name: Copy and untar node_exporter file to etc
+  unarchive:
+    src: "node_exporter-1.7.0.linux-amd64.tar.gz"
+    dest: "/etc/node_exporter"
+
+- name: copy node_exporter.service
+  copy:
+    src: "node_exporter.service"
+    dest: "/etc/systemd/system/"
+
+- name: Start node_exporter service
+  service:
+    name: node_exporter
+    state: restarted
+    enabled: yes

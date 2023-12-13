@@ -1,0 +1,110 @@
+---
+- name: Include vars nginx_host
+  include_vars: nginx-host.yml
+
+- name: Include vars config_file
+  include_vars: config_file.yml
+
+- name: Include vars cluster
+  include_vars: proxy.yml
+
+- include_tasks: "{{ role_path }}/tasks/bash-timeout.yml"
+
+#Installing required packages for Nginx
+- include_tasks: "{{ role_path }}/tasks/install-packages.yml"
+
+#disabling SELinux
+- name: Disable SELinux at next reboot
+  selinux:
+      state: disabled      
+
+#Stopping firewall
+- name: Stop firewalld service
+  service:
+    name: firewalld
+    state: stopped
+    enabled: false
+
+#Reboot 
+- name: Reboot host and wait for it to restart
+  reboot:
+    msg: "Rebooting machine to apply the assignment of user to docker group"
+    connect_timeout: 5
+    reboot_timeout: 300
+    pre_reboot_delay: 0
+    post_reboot_delay: 30
+    test_command: whoami
+
+#Rename the old nginx.conf in /etc/nginx/ to nginx.conf-origin
+- name: move nginx.conf
+  copy:
+     remote_src: True
+     src: "/etc/nginx/nginx.conf"
+     dest: "/etc/nginx/nginx.conf-origin"
+              
+#Copy default ngnix.conf from ansible-playbook files to /etc/nginx 
+- name: copy nginx files
+  copy:
+    src: "nginx.conf"
+    dest: "/etc/nginx/"
+
+- name: create conf.d other environment directory
+  file:
+    path: "/etc/nginx/conf.d/{{ item }}"
+    state: directory
+  loop:
+    "{{ environment_name }}"
+
+- name: create conf.d/upstream directory
+  file:
+    path: "/etc/nginx/conf.d/upstream"
+    state: directory
+
+- name: copy template of environment
+  template:
+    src: "{{ item.1 }}-{{ protocol }}.conf.j2"
+    dest: "/etc/nginx/conf.d/{{ item.0 }}/{{ item.1 }}.conf"
+  loop:
+     "{{ environment_name|product(config_file)|list}}"
+
+- name: copy template of Admin domain
+  template:
+    src: "{{ item.file }}.conf.j2"
+    dest: "/etc/nginx/conf.d/{{ item.env }}/{{ item.file }}.conf"
+  loop:
+    - { env: upstream, file: upstream }
+
+#Copy certificate from ansible-playbook files to /etc/nginx/certs
+- name: create and copy certs files
+  copy:
+    src: "certs"
+    dest: "/etc/nginx/"
+    directory_mode: yes
+  when: protocol = 'https'
+
+#Copy /etc/logrotate.d/nginx  from ansible-playbook template
+- name: copy logrotate.d files for nginx
+  template: 
+     src: nginx.j2 
+     dest: "/etc/logrotate.d/nginx"
+     owner: root
+     group: root
+     mode: 0644
+
+# Create archive directory for nginx logs
+- name: create archive directory
+  file:
+    path: "/var/lib/nginx/archived-logs"
+    state: directory
+    owner: nginx
+    group: root
+    mode: 0770
+
+#systemctcl start nginx
+- name: Start Nginx service
+  service:
+    name: nginx
+    state: restarted
+    enabled: yes
+
+- include_tasks: "{{ role_path }}/tasks/install-node-exporter.yml"

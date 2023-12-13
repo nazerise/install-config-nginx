@@ -1,0 +1,30 @@
+#HTTP
+server {
+        listen 80;
+        server_name  {{ nginx_host[item.0] }};
+        underscores_in_headers on;
+        proxy_buffers 4 256k;	
+        proxy_buffer_size 128k;
+        proxy_busy_buffers_size 256k;
+        include /etc/nginx/mime.types;
+	# favicon.ico
+        location = /favicon.ico {
+        	log_not_found off;
+        	access_log    off;
+        }
+         
+        # robots.txt
+        location = /robots.txt {
+        	log_not_found off;
+	        access_log    off;
+        }
+                
+        location / {
+	 	proxy_set_header Host $host;
+        	proxy_set_header X-Forwarded-Proto $scheme;
+	        proxy_set_header X-Forwarded-Host $host;
+	        proxy_set_header X-Forwarded-Port $server_port;
+	        proxy_pass http://proxy;
+	        limit_req zone=http-zone burst=60 nodelay;
+        }
+}

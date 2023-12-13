@@ -1,0 +1,14 @@
+- name: yum Update 
+  yum:
+    name: '*'
+    state: latest
+  register: lsresult
+  until: "lsresult is not failed"
+  retries: 10
+  delay: 10
+
+- name: Install default packages and Nginx
+  yum:
+    name: "{{ yum.packages }}"
+    state: latest
+    lock_timeout: 180

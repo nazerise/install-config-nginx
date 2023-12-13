@@ -1,0 +1,9 @@
+---
+environment_name:
+   - test
+   - prod
+nginx_host:
+   test: nginx-test.com
+   prod: nginx.com
+domain: nginx.com
+protocol: https

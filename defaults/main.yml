@@ -1,0 +1,25 @@
+---
+# defaults file for nexus
+
+yum:
+  packages:
+    - vim
+    - net-tools
+    - yum-utils
+    - mlocate
+    - telnet
+    - jq
+    - tcpdump
+    - bind-utils
+    - htop
+    - device-mapper-persistent-data
+    - lvm2
+    - traceroute
+    - nginx-filesystem
+    - nginx
+    - nginx-mod-http-image-filter
+    - nginx-mod-http-perl
+    - nginx-mod-http-xslt-filter
+    - nginx-mod-mail
+    - nginx-mod-stream
+    - nginx-all-modules

@@ -1,0 +1,12 @@
+upstream proxy {
+    least_conn;
+    {% for ip in proxy_ip %}
+    server {{ ip }}:80 max_fails=1 fail_timeout=5s;
+    {% endfor %}
+}
+upstream proxy-tls {
+    least_conn;
+    {% for ip in proxy_ip %}
+    server {{ ip }}:80 max_fails=1 fail_timeout=5s;
+    {% endfor %}
+}
