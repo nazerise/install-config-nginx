@@ -7,3 +7,5 @@ nginx_host:
    prod: nginx.com
 domain: nginx.com
 protocol: https
+##Enable CORS (Cross-origin resource sharing)
+cors: true
